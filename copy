@@ -1,0 +1,63 @@
+      if (args.length != 2) {
+            System.out.println(
+                    "Application needs two arguments to run: " +
+                            "java com.hca.jdbc.UsingDriverManager <username> " +
+                            "<password>");
+            System.exit(1);
+        }
+        String username = args[0];
+        String password = args[1];
+
+        BasicDataSource dataSource = new BasicDataSource();
+        dataSource.setUrl("jdbc:mysql://localhost:3306/sakila");
+        dataSource.setUsername(username);
+        dataSource.setPassword(password);
+
+        System.out.println("Search an Actor name:");
+        String choiceOfActor = scanner.nextLine();
+
+        try (Connection connection = dataSource.getConnection();
+
+             PreparedStatement preparedStatement =
+                     connection.prepareStatement(
+                             "SELECT actor_id, first_name, last_name FROM actor WHERE first_name = ?"
+                     )) {
+            preparedStatement.setString(1, choiceOfActor);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                while (resultSet.next()) {
+                    System.out.printf("Actor ID = %s" + "\n" + "First Name = %s" + "\n" + "Last Name = %s" + "\n" + "-------------------" + "\n",
+                            resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3));
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        System.out.println("Search an Actor ID:");
+        int intOfActor = scanner.nextInt();
+
+        try (Connection connection = dataSource.getConnection();
+
+             PreparedStatement preparedStatement =
+                     connection.prepareStatement(
+                             "SELECT a.actor_id, a.first_name, a.last_name, f.film_id, f.title FROM actor a\n" +
+                                     "JOIN film_actor fa ON a.actor_id = fa.actor_id\n" +
+                                     "JOIN film f ON fa.film_id = f.film_id\n" +
+                                     "WHERE a.actor_id = ?;"
+                     )) {
+            preparedStatement.setInt(1, intOfActor);
+            try (ResultSet resultSet = preparedStatement.executeQuery()) {
+
+                while (resultSet.next()) {
+                    System.out.printf("Actor ID = %s" + "\n" + "First Name = %s" + "\n" + "Last Name = %s" + "\n" + "Film ID = %s" + "\n" + "Film Title = %s" + "\n" + "-------------------" + "\n",
+                            resultSet.getInt(1), resultSet.getString(2), resultSet.getString(3), resultSet.getInt(4), resultSet.getString(5));
+                }
+            }
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+}
+
